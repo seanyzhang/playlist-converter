@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette (sunset vibe) */
+  --pc-orange: #de6133;
+  --pc-pink: #e4a2b4;
+  --pc-lavender: #39264b;
+  --pc-bg: #f7f9fe;
+
+  /* Semantic tokens */
+  --pc-text: var(--pc-lavender);
+  --pc-surface: rgba(247, 249, 254, 0.72);
+  --pc-surface-border: rgba(57, 38, 75, 0.12);
+  --pc-shadow: rgba(57, 38, 75, 0.14);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--pc-text);
+    background-color: var(--pc-bg);
+    background-image:
+      radial-gradient(
+        1100px 700px at 15% 10%,
+        color-mix(in oklab, var(--pc-orange) 55%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        900px 600px at 85% 20%,
+        color-mix(in oklab, var(--pc-pink) 55%, transparent),
+        transparent 65%
+      ),
+      radial-gradient(
+        1200px 800px at 55% 95%,
+        color-mix(in oklab, var(--pc-lavender) 18%, transparent),
+        transparent 65%
+      );
+  }
+}
+
+@layer components {
+  /* Apple-ish glass surfaces (use with Tailwind classes too) */
+  .glass-surface {
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    background: var(--pc-surface);
+    border: 1px solid var(--pc-surface-border);
+    box-shadow: 0 14px 40px var(--pc-shadow);
+  }
+
+  .glass-button {
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    background: var(--pc-surface);
+    border: 1px solid var(--pc-surface-border);
+    box-shadow: 0 14px 40px var(--pc-shadow);
+
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease;
+  }
+
+  .glass-button:hover {
+    box-shadow: 0 18px 52px var(--pc-shadow);
+  }
+
+  .glass-button:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--pc-pink) 70%, transparent);
+    outline-offset: 2px;
+  }
+}
