@@ -26,18 +26,17 @@ function FullPageLoading() {
 }
 
 function RootRedirect() {
-  const { status, user, isFullyLinked } = useSession()
+  const { status, user } = useSession()
 
   if (status === 'loading') return <FullPageLoading />
   if (!user) return <Navigate replace to="/welcome" />
-  if (!isFullyLinked) return <Navigate replace to="/onboarding/link" />
   return <Navigate replace to="/app" />
 }
 
 function RedirectIfSignedIn({ children }: { children: React.ReactNode }) {
-  const { status, user, isFullyLinked } = useSession()
+  const { status, user } = useSession()
   if (status === 'loading') return <FullPageLoading />
-  if (user) return <Navigate replace to={isFullyLinked ? '/app' : '/onboarding/link'} />
+  if (user) return <Navigate replace to="/app" />
   return <>{children}</>
 }
 

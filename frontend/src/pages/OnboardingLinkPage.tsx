@@ -14,7 +14,7 @@ export default function OnboardingLinkPage() {
     <GlassCard>
       <h1 className="text-2xl font-semibold tracking-tight text-(--pc-text)">Link your music accounts</h1>
       <p className="mt-2 max-w-2xl text-sm opacity-80">
-        Welcome {user?.displayName ?? ''}. We’ll need both accounts linked before you can convert playlists.
+        Welcome {user?.displayName ?? ''}. Linking now is recommended, but you can also do it later.
       </p>
 
       {lastError ? (
@@ -78,11 +78,13 @@ export default function OnboardingLinkPage() {
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
         <Link to="/app">
-          <GlassButton disabled={!isFullyLinked} type="button">
-            Continue to app
+          <GlassButton type="button">
+            {isFullyLinked ? 'Continue to app' : 'Skip for now'}
           </GlassButton>
         </Link>
-        {!isFullyLinked ? <p className="text-xs opacity-70">Link both accounts to continue.</p> : null}
+        {!isFullyLinked ? (
+          <p className="text-xs opacity-70">You can link later from Account (or when you open Convert).</p>
+        ) : null}
       </div>
     </GlassCard>
   )

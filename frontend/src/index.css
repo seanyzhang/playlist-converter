@@ -23,6 +23,11 @@
   html,
   body {
     height: 100%;
+    /*
+      Prevent vertical rubber-band overscroll from making the background feel like it's "moving".
+      Docs: https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior
+    */
+    overscroll-behavior-y: none;
   }
 
   body {
@@ -69,19 +74,41 @@
     border-radius: 0.75rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
+    transform: translateZ(0) scale(1);
+    will-change: transform, filter;
     transition:
       background-color 150ms ease,
       border-color 150ms ease,
       box-shadow 150ms ease,
-      transform 150ms ease;
+      transform 150ms ease,
+      filter 150ms ease;
   }
 
   .glass-button:hover {
     box-shadow: 0 18px 52px var(--pc-shadow);
+    filter: brightness(0.98);
+    transform: translateZ(0) scale(1.03);
+  }
+
+  .glass-button:active {
+    filter: brightness(0.96);
+    transform: translateZ(0) scale(0.99);
+  }
+
+  .glass-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    transform: none;
   }
 
   .glass-button:focus-visible {
     outline: 3px solid color-mix(in oklab, var(--pc-pink) 70%, transparent);
     outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glass-button {
+      transition: none;
+    }
   }
 }

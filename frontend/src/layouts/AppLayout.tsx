@@ -3,8 +3,9 @@ import { useSession } from '../session/useSession.ts'
 
 function navLinkClass(isActive: boolean): string {
   return [
-    'rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10',
-    isActive ? 'bg-white/60' : 'hover:bg-white/40',
+    'rounded-xl px-3 py-2 transition duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/10 border-[1px] border-transparent',
+    'hover:border-black/10 hover:shadow-[0_10px_26px_var(--pc-shadow)] hover:scale-[1.02] active:scale-[0.99] motion-reduce:hover:scale-100 motion-reduce:active:scale-100',
+    isActive ? 'bg-white/60 border-black/10' : 'hover:bg-white/35',
   ].join(' ')
 }
 

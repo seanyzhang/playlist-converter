@@ -3,21 +3,30 @@ import type { ReactNode } from 'react'
 import type { AuthClient } from './authClient.ts'
 import { SessionContext, type SessionContextValue } from './context.ts'
 import { createMockAuthClient } from './mockAuthClient.ts'
-import type { AuthProvider, AuthStatus, LinkedAccountProvider, LinkedAccounts, SessionSnapshot, User } from './types.ts'
+import type { AuthIdentities, AuthProvider, AuthStatus, LinkedAccountProvider, LinkedAccounts, SessionSnapshot, User } from './types.ts'
 import { isFullyLinked } from './types.ts'
 
 const EMPTY_LINKED: LinkedAccounts = { spotify: false, netease: false }
+const EMPTY_IDENTITIES: AuthIdentities = { google: false, apple: false, phone: false }
 
-function snapshotToState(snapshot: SessionSnapshot | null): { user: User | null; linkedAccounts: LinkedAccounts } {
-  if (!snapshot) return { user: null, linkedAccounts: EMPTY_LINKED }
-  return { user: snapshot.user, linkedAccounts: snapshot.linkedAccounts }
+function snapshotToState(snapshot: SessionSnapshot | null): {
+  user: User | null
+  linkedAccounts: LinkedAccounts
+  identities: AuthIdentities
+} {
+  if (!snapshot) return { user: null, linkedAccounts: EMPTY_LINKED, identities: EMPTY_IDENTITIES }
+  return {
+    user: snapshot.user,
+    linkedAccounts: snapshot.linkedAccounts,
+    identities: snapshot.identities ?? EMPTY_IDENTITIES,
+  }
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useMemo<AuthClient>(() => createMockAuthClient(), [])
 
   const [status, setStatus] = useState<AuthStatus>('loading')
-  const [{ user, linkedAccounts }, setSession] = useState(() => snapshotToState(null))
+  const [{ user, linkedAccounts, identities }, setSession] = useState(() => snapshotToState(null))
   const [isBusy, setIsBusy] = useState(false)
   const [lastError, setLastError] = useState<string | null>(null)
 
@@ -108,6 +117,56 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [client])
 
+  const linkOAuthProvider = useCallback(
+    async (provider: AuthProvider) => {
+      setIsBusy(true)
+      setLastError(null)
+      try {
+        const next = await client.linkOAuthProvider(provider)
+        setSession((prev) => ({ ...prev, user: next.user, identities: next.identities }))
+      } catch (err) {
+        setLastError(err instanceof Error ? err.message : 'Unknown error')
+        throw err
+      } finally {
+        setIsBusy(false)
+      }
+    },
+    [client],
+  )
+
+  const startPhoneLink = useCallback(
+    async (phoneNumber: string) => {
+      setIsBusy(true)
+      setLastError(null)
+      try {
+        return await client.startPhoneLink(phoneNumber)
+      } catch (err) {
+        setLastError(err instanceof Error ? err.message : 'Unknown error')
+        throw err
+      } finally {
+        setIsBusy(false)
+      }
+    },
+    [client],
+  )
+
+  const verifyPhoneLink = useCallback(
+    async (verificationId: string, code: string) => {
+      setIsBusy(true)
+      setLastError(null)
+      try {
+        const next = await client.verifyPhoneLink(verificationId, code)
+        setSession((prev) => ({ ...prev, user: next.user, identities: next.identities }))
+      } catch (err) {
+        setLastError(err instanceof Error ? err.message : 'Unknown error')
+        throw err
+      } finally {
+        setIsBusy(false)
+      }
+    },
+    [client],
+  )
+
   const linkAccount = useCallback(
     async (provider: LinkedAccountProvider) => {
       setIsBusy(true)
@@ -147,6 +206,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       status,
       user,
       linkedAccounts,
+      identities,
       isFullyLinked: isFullyLinked(linkedAccounts),
       isBusy,
       lastError,
@@ -157,22 +217,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         startPhoneSignIn,
         verifyPhoneOtp,
         signOut,
+        linkOAuthProvider,
+        startPhoneLink,
+        verifyPhoneLink,
         linkAccount,
         unlinkAccount,
       },
     }),
     [
+      identities,
       isBusy,
       lastError,
       linkAccount,
       linkedAccounts,
+      linkOAuthProvider,
       refresh,
       signInWithProvider,
       signOut,
+      startPhoneLink,
       startPhoneSignIn,
       status,
       unlinkAccount,
       user,
+      verifyPhoneLink,
       verifyPhoneOtp,
     ],
   )
