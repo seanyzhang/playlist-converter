@@ -1,9 +1,11 @@
-import { Suspense, lazy } from 'react'
-import { Navigate, type RouteObject, useRoutes } from 'react-router-dom'
+import { Suspense, lazy, useEffect, useState } from 'react'
+import { Navigate, type RouteObject, useLocation, useRoutes } from 'react-router-dom'
 import { RequireAuth, RequireLinkedAccounts } from './guards.tsx'
 import { PublicLayout } from '../layouts/PublicLayout'
 import { AppLayout } from '../layouts/AppLayout'
 import { useSession } from '../session/useSession'
+
+const PAGE_TRANSITION_MS = 350
 
 const WelcomePage = lazy(() => import('../pages/WelcomePage'))
 const AuthPage = lazy(() => import('../pages/AuthPage'))
@@ -18,8 +20,18 @@ const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 function FullPageLoading() {
   return (
     <div className="min-h-screen px-6 py-10">
-      <div className="glass-surface mx-auto w-full max-w-3xl rounded-3xl p-6 sm:p-8">
-        <p className="text-sm opacity-80">Loading…</p>
+      <div className="mx-auto flex min-h-[60vh] w-full max-w-5xl items-center justify-center">
+        <div className="pc-grid-loader" aria-label="Loading" role="status">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </div>
     </div>
   )
@@ -41,6 +53,10 @@ function RedirectIfSignedIn({ children }: { children: React.ReactNode }) {
 }
 
 export function AppRoutes() {
+  const location = useLocation()
+  const [displayLocation, setDisplayLocation] = useState(location)
+  const [phase, setPhase] = useState<'idle' | 'out' | 'in'>('idle')
+
   const routes: RouteObject[] = [
     { path: '/', element: <RootRedirect /> },
 
@@ -82,7 +98,38 @@ export function AppRoutes() {
     { path: '*', element: <NotFoundPage /> },
   ]
 
-  const element = useRoutes(routes)
-  return <Suspense fallback={<FullPageLoading />}>{element}</Suspense>
+  useEffect(() => {
+    if (location.key === displayLocation.key) return
+
+    setPhase('out')
+    const t = window.setTimeout(() => {
+      setDisplayLocation(location)
+      setPhase('in')
+    }, PAGE_TRANSITION_MS)
+
+    return () => window.clearTimeout(t)
+  }, [location, displayLocation.key])
+
+  useEffect(() => {
+    if (phase !== 'in') return
+    const t = window.setTimeout(() => setPhase('idle'), PAGE_TRANSITION_MS)
+    return () => window.clearTimeout(t)
+  }, [phase])
+
+  const element = useRoutes(routes, displayLocation)
+
+  return (
+    <div
+      className={[
+        'pc-page-transition',
+        phase === 'out' ? 'pc-page-transition--out' : '',
+        phase === 'in' ? 'pc-page-transition--in' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <Suspense fallback={<FullPageLoading />}>{element}</Suspense>
+    </div>
+  )
 }
 

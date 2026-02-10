@@ -12,6 +12,7 @@
   --pc-surface: rgba(247, 249, 254, 0.72);
   --pc-surface-border: rgba(57, 38, 75, 0.12);
   --pc-shadow: rgba(57, 38, 75, 0.14);
+  --pc-page-transition-ms: 350ms;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -55,6 +56,98 @@
 }
 
 @layer components {
+  @keyframes pc-grid-fade {
+    0% {
+      opacity: 0.28;
+      transform: translateZ(0) scale(0.98);
+    }
+    50% {
+      opacity: 0.86;
+      transform: translateZ(0) scale(1);
+    }
+    100% {
+      opacity: 0.28;
+      transform: translateZ(0) scale(0.98);
+    }
+  }
+
+  .pc-grid-loader {
+    display: grid;
+    grid-template-columns: repeat(3, 12px);
+    grid-template-rows: repeat(3, 12px);
+    gap: 8px;
+  }
+
+  .pc-grid-loader > span {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--pc-lavender) 25%, white);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 10px 22px rgba(57, 38, 75, 0.08);
+    animation: pc-grid-fade 900ms ease-in-out infinite;
+  }
+
+  .pc-grid-loader > span:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .pc-grid-loader > span:nth-child(2) {
+    animation-delay: 90ms;
+  }
+  .pc-grid-loader > span:nth-child(3) {
+    animation-delay: 180ms;
+  }
+  .pc-grid-loader > span:nth-child(4) {
+    animation-delay: 90ms;
+  }
+  .pc-grid-loader > span:nth-child(5) {
+    animation-delay: 180ms;
+  }
+  .pc-grid-loader > span:nth-child(6) {
+    animation-delay: 270ms;
+  }
+  .pc-grid-loader > span:nth-child(7) {
+    animation-delay: 180ms;
+  }
+  .pc-grid-loader > span:nth-child(8) {
+    animation-delay: 270ms;
+  }
+  .pc-grid-loader > span:nth-child(9) {
+    animation-delay: 360ms;
+  }
+
+  @keyframes pc-page-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes pc-page-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  .pc-page-transition {
+    will-change: opacity;
+  }
+
+  .pc-page-transition--out {
+    pointer-events: none;
+    animation: pc-page-fade-out var(--pc-page-transition-ms) ease forwards;
+  }
+
+  .pc-page-transition--in {
+    animation: pc-page-fade-in var(--pc-page-transition-ms) ease forwards;
+  }
+
   /* Apple-ish glass surfaces (use with Tailwind classes too) */
   .glass-surface {
     -webkit-backdrop-filter: blur(24px);
@@ -107,6 +200,19 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .pc-page-transition--out,
+    .pc-page-transition--in {
+      animation: none;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pc-grid-loader > span {
+      animation: none;
+      opacity: 0.7;
+      transform: none;
+    }
+
     .glass-button {
       transition: none;
     }
